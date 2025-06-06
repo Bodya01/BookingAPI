@@ -18,6 +18,9 @@ namespace BookingAPI.Presentation.Controllers
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateBookingCommand request, CancellationToken cancelToken = default)
-            => Ok(await _sender.Send(request, cancelToken));
+        {
+            request.UserId = GetCurrentUserId();
+            return Ok(await _sender.Send(request, cancelToken));
+        }
     }
 }

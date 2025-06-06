@@ -1,7 +1,4 @@
-version: '3.8'
-
 services:
-
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: bookingapi_db
@@ -19,7 +16,6 @@ services:
     depends_on:
       - db
     environment:
-      # Must exactly match SA_PASSWORD above
       ConnectionStrings__DefaultConnection: >
         Server=db,1433;
         Database=BookingDb;

@@ -23,7 +23,7 @@ namespace BookingAPI.Application.Commands.Handlers
             if (!await _roomRepository.ExistsAsync(request.RoomId, cancellationToken))
                 throw new RoomNotFoundException(HttpStatusCode.NotFound, $"Room with the given ID does not exist: {request.RoomId}");
 
-            var booking = new Booking(request.Start, request.End, BookingStatus.Confirmed, request.RoomId, Guid.NewGuid());
+            var booking = new Booking(request.Start, request.End, BookingStatus.Confirmed, request.RoomId, request.UserId);
 
             if (!await _roomService.IsRoomAvailableAsync(request.RoomId, booking.Slot, cancellationToken))
                 throw new RoomAlreadyBookedException(HttpStatusCode.BadRequest, $"Room {request.RoomId} is already booked for the given time slot");

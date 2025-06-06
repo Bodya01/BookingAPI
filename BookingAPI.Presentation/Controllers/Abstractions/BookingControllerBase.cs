@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BookingAPI.Presentation.Controllers.Abstractions
 {
@@ -14,5 +15,8 @@ namespace BookingAPI.Presentation.Controllers.Abstractions
 
         protected BookingControllerBase(IMediator sender)
             => _sender = sender;
+
+        protected Guid GetCurrentUserId()
+            => Guid.Parse(HttpContext.User.FindFirstValue("Id")!);
     }
 }
