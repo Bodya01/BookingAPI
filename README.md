@@ -55,6 +55,7 @@ To use the API you will need to register a user:
    1) User registration (/identity/sign-up) and login (/identity/sign-in) issue JWT tokens
    2) Controllers use the [Authorize] attribute to protect endpoints
    3) Token generation and validation are handled via ASP.NET Core Identity and JWT middleware.
+4. Global exception handling to achieve customized responses
 
 ## Rules
 1. No double-bookings in the same room (overlap check)
