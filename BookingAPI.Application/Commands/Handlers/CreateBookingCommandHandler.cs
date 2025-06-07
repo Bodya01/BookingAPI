@@ -1,5 +1,4 @@
-﻿using BookingAPI.Application.Exceptions;
-using BookingAPI.Application.Exceptions.Room;
+﻿using BookingAPI.Application.Exceptions.Room;
 using BookingAPI.Domain.Entities;
 using BookingAPI.Domain.Enums;
 using BookingAPI.Domain.Repositories;
@@ -21,12 +20,12 @@ namespace BookingAPI.Application.Commands.Handlers
         public async Task<Guid> Handle(CreateBookingCommand request, CancellationToken cancellationToken)
         {
             if (!await _roomRepository.ExistsAsync(request.RoomId, cancellationToken))
-                throw new RoomNotFoundException(HttpStatusCode.NotFound, $"Room with the given ID does not exist: {request.RoomId}");
+                throw new RoomNotFoundException($"Room with the given ID does not exist: {request.RoomId}");
 
             var booking = new Booking(request.Start, request.End, BookingStatus.Confirmed, request.RoomId, request.UserId);
 
             if (!await _roomService.IsRoomAvailableAsync(request.RoomId, booking.Slot, cancellationToken))
-                throw new RoomAlreadyBookedException(HttpStatusCode.BadRequest, $"Room {request.RoomId} is already booked for the given time slot");
+                throw new RoomAlreadyBookedException($"Room {request.RoomId} is already booked for the given time slot");
 
             return await _bookingRepository.CreateAsync(booking, cancellationToken);
         }

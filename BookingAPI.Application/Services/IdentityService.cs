@@ -32,11 +32,11 @@ namespace BookingAPI.Application.Services
         {
             var existingUser = await _userRepository.GetByEmailAsync(model.Email, cancellationToken);
 
-            if (existingUser is null) throw new UserNotFoundException(HttpStatusCode.BadRequest, "User with given email was not found");
+            if (existingUser is null) throw new UserNotFoundException("User with given email was not found");
 
             var isPasswordValid = await _userRepository.ValidatePassword(existingUser.Id, model.Password, cancellationToken);
 
-            if (!isPasswordValid) throw new InvalidPasswordException(HttpStatusCode.Forbidden, "Password is not valid");
+            if (!isPasswordValid) throw new InvalidPasswordException("Password is not valid");
 
             var authResult = await GenerateTokenAsync(existingUser, cancellationToken);
 
@@ -47,13 +47,13 @@ namespace BookingAPI.Application.Services
         {
             var existingUser = await _userRepository.GetByEmailAsync(model.Email, cancellationToken);
 
-            if (existingUser is not null) throw new EmailAlreadyTakenException(HttpStatusCode.BadRequest, model.Email);
+            if (existingUser is not null) throw new EmailAlreadyTakenException(model.Email);
 
             var user = new User(Guid.NewGuid(), model.UserName, model.Email);
 
             var result = await _userRepository.CreateAsync(user, model.Password, cancellationToken);
 
-            if (result == default) throw new UserWasNotCreatedException(HttpStatusCode.BadRequest, "An error occured");
+            if (result == default) throw new UserWasNotCreatedException("An error occured");
 
             var authResult = await GenerateTokenAsync(user, cancellationToken);
             return authResult;
@@ -62,7 +62,7 @@ namespace BookingAPI.Application.Services
         public async Task<AuthenticationResult> RefreshAsync(RefreshAccessToken refreshTokenDto, CancellationToken cancellationToken = default)
         {
             var validatedToken = GetPrincipalFromToken(refreshTokenDto.Token);
-            if (validatedToken is null) throw new RefreshTokenIsInvalidException(HttpStatusCode.Forbidden, "Refresh token is not valid");
+            if (validatedToken is null) throw new RefreshTokenIsInvalidException("Refresh token is not valid");
 
             var expiryDateUnix = long.Parse(validatedToken.Claims
                 .Single(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
@@ -72,7 +72,7 @@ namespace BookingAPI.Application.Services
                 .Subtract(_settings.LifeTime);
 
             if (expiryDateTime > DateTime.UtcNow)
-                throw new RefreshTokenIsExpiredException(HttpStatusCode.BadRequest, "Refresh token is outdated");
+                throw new RefreshTokenIsExpiredException("Refresh token is outdated");
 
             var jti = validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
 
@@ -83,7 +83,7 @@ namespace BookingAPI.Application.Services
                 storedRefreshToken.IsUsed ||
                 storedRefreshToken.JwtId != jti)
             {
-                throw new RefreshTokenIsInvalidException(HttpStatusCode.Forbidden, "Refresh token is not valid");
+                throw new RefreshTokenIsInvalidException("Refresh token is not valid");
             }
 
             storedRefreshToken.IsUsed = true;

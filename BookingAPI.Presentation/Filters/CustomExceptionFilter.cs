@@ -1,4 +1,7 @@
-﻿using BookingAPI.Domain.DDD;
+﻿using BookingAPI.Application.Exceptions.RefreshToken;
+using BookingAPI.Application.Exceptions.Room;
+using BookingAPI.Application.Exceptions.User;
+using BookingAPI.Domain.DDD;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Net;
@@ -17,22 +20,38 @@ namespace BookingAPI.Presentation.Filters
             var parsedName = ParseExceptionName(runtimeTypeName);
             var messageWithType = $"{parsedName}: {exception.Message}";
 
-            if (exception is DomainException domainEx)
+            if (exception is ApplicationException)
             {
-                context.Result = new BadRequestObjectResult(messageWithType);
-                context.ExceptionHandled = true;
-                return;
-            }
+                var statusCode = exception switch
+                {
+                    RefreshTokenIsExpiredException => HttpStatusCode.BadRequest,
+                    RefreshTokenIsInvalidException => HttpStatusCode.Forbidden,
 
-            if (exception is ApplicationException appEx)
-            {
-                var statusCode = (int)appEx.Code;
+                    EmailAlreadyTakenException => HttpStatusCode.BadRequest,
+                    InvalidPasswordException => HttpStatusCode.Forbidden,
+                    UserNotFoundException => HttpStatusCode.NotFound,
+                    UserWasNotCreatedException => HttpStatusCode.BadRequest,
+
+                    RoomAlreadyBookedException => HttpStatusCode.BadRequest,
+                    RoomNotFoundException => HttpStatusCode.NotFound,
+                    _ => HttpStatusCode.InternalServerError
+                };
 
                 context.Result = new ObjectResult(messageWithType)
                 {
-                    StatusCode = statusCode
+                    StatusCode = (int)statusCode,
                 };
+
                 context.ExceptionHandled = true;
+
+                return;
+            }
+
+            if (exception is DomainException)
+            {
+                context.Result = new BadRequestObjectResult(messageWithType);
+                context.ExceptionHandled = true;
+
                 return;
             }
 
@@ -41,6 +60,7 @@ namespace BookingAPI.Presentation.Filters
             {
                 StatusCode = (int)HttpStatusCode.InternalServerError
             };
+
             context.ExceptionHandled = true;
         }
 
